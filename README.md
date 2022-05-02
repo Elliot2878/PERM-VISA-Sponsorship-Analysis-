@@ -1,6 +1,6 @@
 # README: 
 
-## Perm Analysis
+## PERM Analysis (by Yue Tan)
 Direcotry: ana_code
 A zip file containing source code to clean data for the analytic Clean.class, Clean.jar, CleanMapper.class
 Actual code can be found in etl_code directory
@@ -34,7 +34,7 @@ Input data is the output of MapReduce cleaned data.
 
 
 
-## GNI Analysis:
+## GNI Analysis (by Shuyang Ma)
 Our groups will all work on perm vis sonship data but with different focus. We have included three separate readme files each describing our respective part of the analytic (We think this will be more clear to follow than mixing our analytics together).
 
 The purpose of my part of the analytics is to discover the relationship between economic index GNI (Gross national income) and per visa sponsorships.
@@ -83,7 +83,7 @@ Note: you could skip step 1-5 and directly enters step 6 if you directly use the
 
 
 
-## Wage Analysis:
+## Wage Analysis (by Zhenyuan Liang):
 Datasets:
 My own dataset is about wage which is an auxiliary dataset
 The main dataset of our team is about perm
