@@ -1,0 +1,26 @@
+This is just a collection of hive queries. For detail information about why I ran them step by step, you should read the readme file. 
+
+
+CREATE EXTERNAL TABLE wage(occ_title STRING, tot_emp BIGINT, h_mean DOUBLE, a_mean BIGINT, h_median DOUBLE, a_median BIGINT) COMMENT 'Bigdata-wage' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE LOCATION '/user/zl2878/476_big_data/hw9/input_wage';
+
+CREATE EXTERNAL TABLE perm_status(status STRING, title STRING, skill STRING, wage BIGINT, citizenship STRING, education STRING) COMMENT 'Bigdata-perm' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE LOCATION '/user/zl2878/476_big_data/hw9/input_perm_status';
+
+hdfs dfs -mkdir 476_big_data/final_code/hive_group
+
+insert overwrite directory '/user/zl2878/476_big_data/final_code/hive_group' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' SELECT occ_title, avg(a_mean) FROM wage group by occ_title;
+
+CREATE EXTERNAL TABLE wage_group(occ_title STRING, a_mean BIGINT) COMMENT 'Bigdata-wage' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE LOCATION '/user/zl2878/476_big_data/final_code/hive_group';
+
+hdfs dfs -mkdir 476_big_data/final_code/merge2
+
+insert overwrite directory '/user/zl2878/476_big_data/final_code/merge2' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' select occ_title, a_mean, wage from wage_group inner join perm_status on occ_title =title where status="Certified";
+
+CREATE EXTERNAL TABLE wage_perm_certified(occ_title STRING, a_mean BIGINT, wage BIGINT) COMMENT 'Bigdata-merge_certified' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE LOCATION '/user/zl2878/476_big_data/final_code/merge2';
+
+ALTER TABLE wage_perm_certified CHANGE a_mean a_mean_national BIGINT;
+
+ALTER TABLE wage_perm_certified CHANGE wage a_mean_perm_certified BIGINT;
+
+select count(occ_title) from wage_perm_certified where a_mean_national > a_mean_perm_certified;
+
+select count(occ_title) from wage_perm_certified where a_mean_national < a_mean_perm_certified;

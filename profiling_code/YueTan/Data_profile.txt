@@ -1,0 +1,24 @@
+
+Column 0: Status
+Data Type: String
+Description: Permanent visa application status
+ 
+Column 1: PW_SOC_TITLE
+Data Type: String
+Description:Occupational title
+ 
+Column 2: PW_SKILL_LEVEL
+Data Type: String
+Description: Level of the prevailing wage determination. Valid values include “Level I”, “Level II”, “Level III”, “Level IV”, and “N/A”.
+ 
+Column 3: PW_WAGE
+Data Type: Integer
+Description: Prevailing wage for the job being requested for permanent labor certification.
+ 
+Column 4: FOREIGN_WORKER_INFO_MAJOR
+Data Type: String
+Description: Major field(s) of study in reference to the highest level achieved by the foreign worker.
+ 
+Column 5: COUNTRY_OF_CITIZENSHIP
+Data Type: String
+Description: Country of citizenship of the foreign worker being sponsored by the employer for permanent employment in the United States

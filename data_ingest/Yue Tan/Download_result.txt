@@ -1,0 +1,4 @@
+hdfs dfs -get hw/output/part-r-00000 ./
+
+
+scp  yt1579@peel.hpc.nyu.edu:/home/yt1579/part-r-00000 ~/Desktop/476

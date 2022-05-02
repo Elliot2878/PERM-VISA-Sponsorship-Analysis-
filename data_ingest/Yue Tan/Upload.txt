@@ -1,0 +1,22 @@
+//Upload data and source code
+
+scp /Users/mac/Desktop/476/CleanMapper.java    yt1579@peel.hpc.nyu.edu:/home/yt1579
+scp /Users/mac/Desktop/476/Clean.java    yt1579@peel.hpc.nyu.edu:/home/yt1579
+scp /Users/mac/Desktop/476/NEW_PERMA_DATA.csv    yt1579@peel.hpc.nyu.edu:/home/yt1579
+
+
+
+
+//MapReduce Command
+
+rm *.class
+rm *.jar
+yarn classpath
+javac -classpath `yarn classpath` -d . CleanMapper.java Clean.java
+jar -cvf Clean.jar *.class
+hdfs dfs -mkdir hw hdfs dfs -mkdir hw/input
+hdfs dfs -put PERMA_DATA.csv hw/input
+hadoop jar Clean.jar Clean hw/input/PERMA_DATA.csv /user/yt1579/hw/output
+
+
+
