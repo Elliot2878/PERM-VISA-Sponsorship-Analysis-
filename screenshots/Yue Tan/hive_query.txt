@@ -1,0 +1,30 @@
+Create external table with 6 columns:
+CREATE EXTERNAL TABLE PERMA_Receiver(status STRING, title STRING, skill STRING, wage INT, citizenship STRING, education STRING)ROW FORMAT DELIMITED FIELDS TERMINATED BY ‘,’ STORED AS TEXTFILE
+LOCATION '/user/yt1579/PERMA_Receiver'TBLPROPERTIES (“skip.herder.line.count”=”1”);
+
+
+
+Copy the data:
+hadoop fs -copyFromLocal /home/yt1579/perm_output.csv /user/yt1579/PERMA_Receiver;
+
+
+
+Count the number of certified applicant:
+SELECT count(status) from PERMA_Receiver where status == ‘Certified’as success;
+
+
+Count the number of bad records(denied, withdrawn):
+SELECT count(status) from PERMA_Receiver where status == ‘Certified’as success;
+
+mean wage according to each country:
+SELECT citizenship, avg(wage) as avg from PERMA_Receiver WHERE status == ‘Certified’ GROUP BY citizenship ORDER BY avg DESC;
+
+mean wage according to each job title:
+SELECT title, avg(wage) as avg from PERMA_Receiver WHERE status == ‘Certified’ GROUP BY title ORDER BY avg DESC;
+
+mean wage according to education level:
+SELECT education, avg(wage) as avg from PERMA_Receiver WHERE status == ‘Certified’ GROUP BY education ORDER BY avg DESC;
+
+
+
+

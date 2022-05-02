@@ -1,0 +1,96 @@
+-- create hive table for the main perm dataset
+
+CREATE TABLE perm (status STRING, title STRING, skill STRING, wage INTEGER, citizenship STRING, education STRING) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
+STORED AS TEXTFILE
+LOCATION '/user/sm8068/project/tables/perm';
+
+-- load the perm data
+LOAD DATA INPATH "/user/sm8068/project/dataset/perm_clean.csv"
+OVERWRITE INTO TABLE perm;
+
+SELECT * FROM perm LIMIT 10;
+
+-- create table for nation economic  index - GNI
+CREATE TABLE gni (countryID STRING, countryName String, C2016 INTEGER, C2017 INTEGER, C2018 INTEGER, C2019 INTEGER, C2020 INTEGER, fiveYearAverage DOUBLE) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
+STORED AS TEXTFILE;
+LOCATION '/user/sm8068/project/tables/gni'
+TBLPROPERTIES ("skip.header.line.count"="1");
+
+-- load data for gin
+LOAD DATA INPATH "/user/sm8068/project/dataset/gni_clean.csv"
+OVERWRITE INTO TABLE gni;
+
+SELECT * FROM gni LIMIT 10;
+
+-- Data profiling for the GNI dataset: mean and median
+
+CREATE TABLE median_world_gni AS SELECT percentile(cast(FiveYearAverage as BIGINT),0.5) FROM gni;
+
+SELECT * FROM median_world_gni;
+
+CREATE TABLE average_world_gni AS SELECT AVG(FiveYearAverage) FROM gni;
+
+SLEECT * from median_world_gni;
+
+
+-- Merge the GNI dataset with the perm dataset
+
+CREATE TABLE merged as SELECT a.fiveYearAverage as HomeCountryGNI, b.* FROM gni a INNER JOIN perm b ON (a.countryname == b.citizenship); 
+
+
+SELECT * FROM merged LIMIT 10;
+
+-- Group all the certified cases by applicant's citizenship, with the highest count on top
+
+CREATE TABLE certified_group_by_citizenship AS SELECT citizenship, min(homecountrygni) as gni, count(status) as count FROM merged WHERE status == "Certified" GROUP BY citizenship ORDER BY count DESC;
+
+
+SELECT * FROM certified_group_by_citizenship LIMIT 10;
+
+-- Group all the denied cases by citizenship with descending order by count
+CREATE TABLE denied_group_by_citizenship AS SELECT citizenship, min(homecountrygni) as gni, count(status) as count FROM merged WHERE status == "Denied" GROUP BY citizenship ORDER BY count DESC;
+
+
+SELECT * FROM denied_group_by_citizenship LIMIT 10;
+
+-- Calculate the certified - denied ratio for each country , this is a key indicator in whether the country's citizenships are more likely to be approved. The output is in the descending order, the countries that have more presence in perm visas are ranked at top
+
+CREATE TABLE certified_denied_ratio AS SELECT a.citizenship, a.gni, a.count/b.count AS ratio FROM certified_group_by_citizenship a INNER JOIN denied_group_by_citizenship b ON (a.citizenship == b.citizenship) ORDER BY ratio DESC;
+
+SELECT * FROM certified_denied_ratio LIMIT 10;
+
+-- The certified - denied ratio in ascending order, with the country of the least presence on top
+
+CREATE TABLE certified_denied_ratio_ascending AS SELECT * FROM certified_denied_ratio ORDER BY ratio ASC;
+
+-- Calculate median and average gni in sub-groups of the dataset to compare the difference. 
+-- We have found that countries with higher admission rate (certified to 
+-- denied ratio) tends to have higher GNI.
+
+-- The queries results are all saved to tables. The content of each table is stated in the name of the table.
+
+
+CREATE TABLE median_gni_for_ten_highest_admission_countries AS SELECT percentile(cast(sub.gni as BIGINT),0.5) as median_gni FROM (SELECT * FROM certified_denied_ratio LIMIT 10) sub;
+
+
+SELECT * FROM median_gni_for_ten_highest_admission_countries
+
+CREATE TABLE median_gni_for_ten_lowest_admission_countries AS SELECT percentile(cast(sub.gni as BIGINT),0.5) as median_gni FROM (SELECT * FROM certified_denied_ratio_ascending LIMIT 10) sub;
+
+
+SELECT * FROM median_gni_for_ten_lowest_admission_countries
+
+CREATE TABLE average_gni_for_ten_lowest_admission_countries AS SELECT AVG(sub.gni) as average_gni FROM (SELECT * FROM certified_denied_ratio_ascending LIMIT 10) sub;
+
+
+CREATE TABLE average_gni_for_ten_highest_admission_countries AS SELECT AVG(sub.gni) as average_gni FROM (SELECT * FROM certified_denied_ratio LIMIT 10) sub;
+
+
+SELECT * FROM average_gni_for_ten_lowest_admission_countries;
+
+SELECT * FROM average_gni_for_ten_highest_admission_countries;
+
+CREATE TABLE average_gni_by_education AS SELECT AVG(homeCountryGNI) FROM merged GROUP BY education;
+
